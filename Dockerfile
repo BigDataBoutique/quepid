@@ -1,14 +1,14 @@
 FROM ruby:2.5.7-stretch
 
 # Must have packages
-RUN apt-get update -qq && apt-get install -y vim curl git tmux
+RUN apt-get update -qq && apt-get install -y vim curl git tmux apt-transport-https ca-certificates
 
 # Install Node
-RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add & \ 
-	curl -sL https://deb.nodesource.com/setup_8.x | bash & \
-	echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
+RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
+RUN curl -sL https://deb.nodesource.com/setup_8.x | bash
+RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
 
-RUN apt-get update && apt-get install -y nodejs yarn curl \
+RUN apt-get update && apt-get install -y nodejs yarn \
   && apt-get install -y --no-install-recommends \
     ca-certificates                             \
     bzip2                                       \
