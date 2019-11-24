@@ -25,8 +25,9 @@ RUN apt-get update && apt-get install -y nodejs yarn \
 #  && mv bin/phantomjs /usr/local/bin                    \
 #  && cd                                                 \
 
-COPY . /srv/app
+CMD foreman s -f Procfile.dev
 WORKDIR /srv/app
+COPY . /srv/app
 
 RUN bundle install
-RUN yarn install
+RUN yarn

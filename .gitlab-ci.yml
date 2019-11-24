@@ -19,6 +19,9 @@ package:
     - docker push $CONTAINER_TEST_IMAGE
   only:
     - master-bdbq
+  except:
+    changes:
+      - docker-compose.yml
 
 release:
   stage: release
@@ -36,3 +39,6 @@ release:
     - docker push $IMAGE_NAME
   only:
     - master-bdbq
+  except:
+    changes:
+      - docker-compose.yml

@@ -16,10 +16,22 @@ services:
 
   app:
     container_name: quepid_app
-    build:
-      context: .
-      dockerfile: Dockerfile.dev
-    image: quepid/quepid
+    #build:
+    #  context: .
+    #  dockerfile: Dockerfile.dev
+    #image: quepid/app
+    image: registry.gitlab.com/eyfo/quepid:commit-8353df6eb1117c77faa48961f6aebdfb1721a084
+    command: foreman s -f Procfile.dev
+    environment:
+      - PORT=3000
+      - RACK_ENV=development
+      - RAILS_ENV=development
+      - DB_ADAPTER=mysql2
+      - DB_HOST=mysql
+      - DB_USERNAME=root
+      - DB_PASSWORD=password
+      - DB_NAME=quepid
+      - REDIS_URL=redis://redis:6379/1
     volumes:
       - .:/srv/app
     ports:
