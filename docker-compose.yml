@@ -20,8 +20,7 @@ services:
     #  context: .
     #  dockerfile: Dockerfile.dev
     #image: quepid/app
-    image: registry.gitlab.com/eyfo/quepid:commit-1305f38c11d54ff24e0ff0357e67ad4f888fbf5a
-    command: foreman s -f Procfile.dev
+    image: registry.gitlab.com/eyfo/quepid:commit-0a781fb1d632093b7320fccab9e4743d0b4b7f3b
     environment:
       - PORT=3000
       - RACK_ENV=development
