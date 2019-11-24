@@ -1,11 +1,25 @@
 image: docker:stable
 
 stages:
+  - install
   - package
+
+cache:
+  paths:
+    - node_modules/
+    - .yarn
 
 variables:
   STAGING_REGISTRY: "registry.gitlab.com"
   CONTAINER_TEST_IMAGE: ${STAGING_REGISTRY}/eyfo/${CI_PROJECT_NAME}:commit-${CI_COMMIT_SHA}
+
+install:
+  image: node:8
+  stage: install
+  before_script: 
+    - yarn config set cache-folder .yarn
+  script:
+    - yarn
 
 package:
   stage: package

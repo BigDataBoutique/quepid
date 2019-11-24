@@ -30,4 +30,3 @@ WORKDIR /srv/app
 COPY . /srv/app
 
 RUN bundle install
-RUN yarn
