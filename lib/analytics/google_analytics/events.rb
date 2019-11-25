@@ -686,7 +686,9 @@ module Analytics
       # https://developers.google.com/analytics/devguides/collection/analyticsjs/events
       #
       def create_event data
-        GoogleAnalyticsEventJob.perform_later data
+        if Analytics::GA.enabled?
+          GoogleAnalyticsEventJob.perform_later data
+        end
       end
     end
   end

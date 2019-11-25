@@ -4,12 +4,14 @@ class GoogleAnalyticsEventJob < ActiveJob::Base
   queue_as :default
 
   def perform data
-    Analytics::GA.ga.event(
-      data[:category],
-      data[:action],
-      data[:label],
-      data[:value],
-      data[:bounce] || false
-    )
+    if Analytics::GA.enabled?
+      Analytics::GA.ga.event(
+        data[:category],
+        data[:action],
+        data[:label],
+        data[:value],
+        data[:bounce] || false
+      )
+    end
   end
 end
