@@ -1,3 +1,8 @@
+FROM node:8.16 AS node_deps
+WORKDIR /srv/app
+COPY package.json yarn.lock ./
+RUN yarn install
+
 FROM ruby:2.5.7-stretch
 
 # Must have packages
@@ -16,17 +21,12 @@ RUN apt-get update && apt-get install -y nodejs yarn \
   && apt-get clean all                          \
   && rm -rf /var/lib/apt/lists/*
 
-# Install PhantomJS
-#RUN mkdir /tmp/phantomjs                               \
-#  && curl -L                                            \
-#    https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-2.1.1-linux-x86_64.tar.bz2  \
-#    | tar -xj --strip-components=1 -C /tmp/phantomjs    \
-#  && cd /tmp/phantomjs                                  \
-#  && mv bin/phantomjs /usr/local/bin                    \
-#  && cd                                                 \
-
-CMD foreman s -f Procfile.dev
+# Install dependencies
 WORKDIR /srv/app
-COPY . /srv/app
-
+COPY Gemfile Gemfile.lock ./
 RUN bundle install
+
+COPY --from=node_deps /srv/app/node_modules ./node_modules/
+COPY . .
+RUN rake assets:precompile DB_ADAPTER=mysql2
+CMD foreman s

@@ -13,7 +13,7 @@ Dir.chdir APP_ROOT do
   when 'bash', 'c'
     system 'docker-compose run --rm app bash'
   when 'daemon', 'q'
-    system 'docker-compose run -d --service-ports app foreman s -f Procfile.dev'
+    system 'docker-compose run -d --service-ports app foreman s'
   when 'destroy', 'd'
     system 'docker-compose down'
   when 'run', 'r'
@@ -21,7 +21,7 @@ Dir.chdir APP_ROOT do
   when 'stop', 'p'
     system 'docker-compose stop'
   when 'server', 's'
-    system 'docker-compose run --service-ports app foreman s -f Procfile.dev'
+    system 'docker-compose run --service-ports app foreman s'
   when 'start', 't'
     system 'docker-compose start'
   else

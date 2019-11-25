@@ -1,25 +1,13 @@
 image: docker:stable
 
 stages:
-  - install
   - package
-
-cache:
-  paths:
-    - node_modules/
-    - .yarn
+  - release
 
 variables:
   STAGING_REGISTRY: "registry.gitlab.com"
   CONTAINER_TEST_IMAGE: ${STAGING_REGISTRY}/eyfo/${CI_PROJECT_NAME}:commit-${CI_COMMIT_SHA}
-
-install:
-  image: node:8
-  stage: install
-  before_script: 
-    - yarn config set cache-folder .yarn
-  script:
-    - yarn
+  CONTAINER_LATEST_IMAGE: ${STAGING_REGISTRY}/eyfo/${CI_PROJECT_NAME}:latest
 
 package:
   stage: package
@@ -28,10 +16,22 @@ package:
   before_script:
     - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $STAGING_REGISTRY
   script:
-    - docker build -t $CONTAINER_TEST_IMAGE --build-arg buildtime_CI_COMMIT_SHA=`date '+%Y-%m-%d-%H%M'`-${CI_COMMIT_SHA:0:9} .
+    - docker build -t $CONTAINER_TEST_IMAGE .
     - docker push $CONTAINER_TEST_IMAGE
+
+release:
+  stage: release
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $STAGING_REGISTRY
+  script:
+    - IMAGE_NAME=${STAGING_REGISTRY}/eyfo/${CI_PROJECT_NAME}:`date '+%Y-%m-%d-%H%M'`-${CI_COMMIT_SHA:0:9}
+    - echo $IMAGE_NAME
+    - docker pull $CONTAINER_TEST_IMAGE
+    - docker tag $CONTAINER_TEST_IMAGE $IMAGE_NAME
+    - docker push $IMAGE_NAME
+    - docker tag $CONTAINER_TEST_IMAGE $CONTAINER_LATEST_IMAGE
+    - docker push $CONTAINER_LATEST_IMAGE
   only:
     - master-bdbq
-  except:
-    changes:
-      - docker-compose.yml

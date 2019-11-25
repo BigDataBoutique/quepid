@@ -1,3 +1,8 @@
+FROM node:8.16 AS node_deps
+WORKDIR /srv/app
+COPY package.json yarn.lock ./
+RUN yarn install
+
 FROM ruby:2.5.7-stretch
 
 MAINTAINER OpenSource Connections <quepid_admin@opensourceconnections.com>
@@ -41,7 +46,11 @@ RUN curl https://cli-assets.heroku.com/install-ubuntu.sh | sh
 # Clean environment
 RUN apt-get clean all
 
-COPY . /srv/app
+# Install dependencies
 WORKDIR /srv/app
-
+COPY Gemfile Gemfile.lock ./
 RUN bundle install
+
+COPY --from=node_deps /srv/app/node_modules ./node_modules/
+COPY . .
+CMD foreman s
