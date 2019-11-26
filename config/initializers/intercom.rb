@@ -17,11 +17,7 @@ IntercomRails.config do |config|
   # == Enabled Environments
   # Which environments is auto inclusion of the Javascript enabled for
   #
-  if config.app_id.present?
-    config.enabled_environments = %w[development production staging]
-  else
-    config.enabled_environments = []
-  end
+  config.enabled_environments = config.app_id.present? ? %w[development production staging] : []
 
   # == Current user method/variable
   # The method/variable that contains the logged in user in your controllers.

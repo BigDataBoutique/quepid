@@ -10,9 +10,9 @@ module Analytics
       end
 
       def ga
-        if self.enabled?
-          @ga ||= Gabba::Gabba.new(ENV['QUEPID_GA'], ENV['QUEPID_DOMAIN'])
-        end
+        return unless enabled?
+
+        @ga ||= Gabba::Gabba.new(ENV['QUEPID_GA'], ENV['QUEPID_DOMAIN'])
       end
     end
   end
