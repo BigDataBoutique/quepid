@@ -5,12 +5,11 @@
 # Table name: cases
 #
 #  id              :integer          not null, primary key
-#  caseName        :string(191)
-#  searchUrl       :string(500)
-#  fieldSpec       :string(500)
-#  lastTry         :integer
+#  case_name       :string(191)
+#  search_url      :string(500)
+#  field_spec      :string(500)
+#  last_try_number :integer
 #  user_id         :integer
-#  displayPosition :integer
 #  archived        :boolean
 #  scorer_id       :integer
 #  created_at      :datetime         not null
@@ -57,7 +56,7 @@ class Case < ActiveRecord::Base
   has_many   :annotations,
              through: :scores
 
-  has_many   :user_scorers, -> { where(communal: false) },
+  has_many   :user_scorers,
              through:     :queries,
              source:      :scorer,
              source_type: 'Scorer'
@@ -68,7 +67,7 @@ class Case < ActiveRecord::Base
              source_type: 'DefaultScorer'
 
   # Validations
-  validates :caseName, presence: true
+  validates :case_name, presence: true
   validates_with DefaultScorerExistsValidator
 
   # Callbacks
@@ -109,12 +108,13 @@ class Case < ActiveRecord::Base
 
       if preserve_history
         original_case.tries.each do |a_try|
-          clone_try a_try
+          clone_try(a_try, true)
         end
       elsif try
-        clone_try try
+        clone_try(try, false)
       end
-      self.lastTry = tries.last.tryNo
+
+      self.last_try_number = tries.last.try_number
 
       if clone_queries
         original_case.queries.each do |query|
@@ -160,24 +160,33 @@ class Case < ActiveRecord::Base
   end
 
   def add_default_try
-    try_number  = (lastTry || -1) + 1
-    the_try     = tries.create(tryNo: try_number)
-    update lastTry: the_try.tryNo
+    try_number  = (last_try_number || -1) + 1
+    the_try     = tries.create(try_number: try_number)
+    update last_try_number: the_try.try_number
   end
 
-  def clone_try the_try
+  # rubocop:disable Metrics/MethodLength
+  def clone_try the_try, preserve_history
     new_try = Try.new(
-      escapeQuery:  the_try.escapeQuery,
-      fieldSpec:    the_try.fieldSpec,
-      name:         the_try.name,
-      queryParams:  the_try.queryParams,
-      searchEngine: the_try.searchEngine,
-      searchUrl:    the_try.searchUrl,
-      tryNo:        0
+      escape_query:  the_try.escape_query,
+      field_spec:    the_try.field_spec,
+      name:          the_try.name,
+      query_params:  the_try.query_params,
+      search_engine: the_try.search_engine,
+      search_url:    the_try.search_url,
+      try_number:    preserve_history ? the_try.try_number : 0
     )
-
     tries << new_try
+
+    the_try.curator_variables.each do |a_curator_variable|
+      new_curator_variable = CuratorVariable.new(
+        name:  a_curator_variable.name,
+        value: a_curator_variable.value
+      )
+      new_try.curator_variables << new_curator_variable
+    end
   end
+  # rubocop:enable Metrics/MethodLength
 
   # rubocop:disable Metrics/MethodLength
   def clone_query query, clone_ratings
@@ -203,6 +212,7 @@ class Case < ActiveRecord::Base
 
     queries << new_query
   end
+
   # rubocop:enable Metrics/MethodLength
 end
 # rubocop:enable Metrics/ClassLength

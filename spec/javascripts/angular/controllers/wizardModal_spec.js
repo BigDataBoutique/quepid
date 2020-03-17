@@ -32,27 +32,27 @@ describe('Controller: WizardModalCtrl', function () {
   var bootstrappedSettingsData = {
     tries: [
       {
-        searchUrl: 'http://quepid-solr.dev.o19s.com/solr/tmdb/select',
-        fieldSpec: 'catch_line',
+        search_url: 'http://quepid-solr.dev.o19s.com/solr/tmdb/select',
+        field_spec: 'catch_line',
         curatorVars: {},
-        queryParams: 'q=#$query##',
+        query_params: 'q=#$query##',
         args: {
           q: ['#$query##']
         },
-        tryNo: 0
+        try_number: 0
       }
     ],
   };
 
   var mockTry = {
-    searchUrl: 'http://quepid-solr.dev.o19s.com/solr/tmdb/select',
-    fieldSpec: 'catch_line',
+    search_url: 'http://quepid-solr.dev.o19s.com/solr/tmdb/select',
+    field_spec: 'catch_line',
     curatorVars: {},
-    queryParams: 'q=#$query##',
+    query_params: 'q=#$query##',
     args: {
       q: ['#$query##']
     },
-    tryNo: 0
+    try_number: 0
   };
 
   var mockUser = {
@@ -140,27 +140,59 @@ describe('Controller: WizardModalCtrl', function () {
       ]
     };
 
-    // it('adds queries', function() {
-    //   $httpBackend.expectPOST('/api/cases/0/tries').respond(200, mockTry);
-    //   $httpBackend.expectGET('/api/cases/0/scorers').respond(200, {});
-    //   $httpBackend.expectGET('/api/cases/0/queries?bootstrap=true').respond(200, mockFullQueriesResp);
 
-    //   for (var i = 0; i < 10; i++) {
-    //     var testQuery = 'foo ' + i;
-    //     scope.pendingWizardSettings.addQuery(testQuery);
+    it ('gets title field for autocomplete', function() {
+      scope.searchFields = ['title', 'body', 'image'];
+      var autocompleteList = scope.loadFields('ti');
+      expect(autocompleteList.length).toBe(1);
+    });
 
-    //     expect(scope.pendingWizardSettings.newQueries).toContain({queryString: testQuery});
-    //     expect(scope.pendingWizardSettings.newQueries).toContain({queryString: testQuery});
+    it ('gets all fields for media: autocomplete', function() {
+      scope.searchFields = ['title', 'body', 'image'];
+      var autocompleteList = scope.loadFields('media:');
+      expect(autocompleteList.length).toBe(3);
+    });
 
-    //     var newQueryRespIth = angular.copy(newQueryResp);
-    //     newQueryRespIth.query['query_text'] = testQuery;
+    it ('gets all fields for thumb: autocomplete', function() {
+      scope.searchFields = ['title', 'body', 'image'];
+      var autocompleteList = scope.loadFields('thumb:');
+      expect(autocompleteList.length).toBe(3);
+    });
 
-    //     $httpBackend.expectPOST('/api/cases/0/queries').respond(200, newQueryRespIth);
-    //     $httpBackend.expectJSONP(expectedSolrUrl(mockTry.searchUrl)).respond(200, {});
-    //   }
+    it ('gets subset without modifier prefix', function() {
+      scope.searchFields = ['title', 'body', 'image', 'imageAlt'];
+      var autocompleteList = scope.loadFields('im');
+      expect(autocompleteList.length).toBe(2);
+      expect(autocompleteList).toEqual([{'text': 'image'}, {'text': 'imageAlt'}]);
+    });
 
-    //   scope.pendingWizardSettings.submit();
-    //   $httpBackend.flush();
-    // });
+    it ('gets subset with modifier prefix', function() {
+      scope.searchFields = ['title', 'body', 'image', 'imageAlt'];
+      var autocompleteList = scope.loadFields('thumb:im');
+      expect(autocompleteList.length).toBe(2);
+      expect(autocompleteList).toEqual([{'text': 'thumb:image'}, {'text': 'thumb:imageAlt'}]);
+    });
+
+    it('adds queries', function() {
+      $httpBackend.expectPOST('/api/cases/0/tries').respond(200, mockTry);
+      $httpBackend.expectGET('/api/cases/0/scorers').respond(200, {});
+      $httpBackend.expectGET('/api/cases/0/queries?bootstrap=true').respond(200, mockFullQueriesResp);
+
+      for (var i = 0; i < 10; i++) {
+        var testQuery = 'foo ' + i;
+        scope.pendingWizardSettings.addQuery(testQuery);
+
+        expect(scope.pendingWizardSettings.newQueries).toContain({queryString: testQuery});
+
+        var newQueryRespIth = angular.copy(newQueryResp);
+        newQueryRespIth.query['query_text'] = testQuery;
+
+        $httpBackend.whenPOST('/api/cases/0/queries').respond(200, newQueryRespIth);
+        $httpBackend.whenJSONP(expectedSolrUrl(mockTry.search_url)).respond(200, {});
+      }
+
+      scope.pendingWizardSettings.submit();
+      $httpBackend.flush();
+    });
   });
 });

@@ -11,9 +11,8 @@ module Api
         @default_scorers   = DefaultScorer.published
           .order(published_at: :desc)
           .all
-        @community_scorers = Scorer.communal.all
 
-        respond_with @user_scorers, @default_scorers, @community_scorers
+        respond_with @user_scorers, @default_scorers
       end
 
       def show
@@ -124,7 +123,7 @@ module Api
           render(
             json:   {
               # rubocop:disable Metrics/LineLength
-              error: "Cannot delete the scorer because it is the default for #{@cases.count} #{'case'.pluralize(@cases.count)}: [#{@cases.take(3).map(&:caseName).to_sentence}]",
+              error: "Cannot delete the scorer because it is the default for #{@cases.count} #{'case'.pluralize(@cases.count)}: [#{@cases.take(3).map(&:case_name).to_sentence}]",
               # rubocop:enable Metrics/LineLength
             },
             status: :bad_request
@@ -190,7 +189,6 @@ module Api
           scale: []
         ).tap do |whitelisted|
           whitelisted[:scale_with_labels] = params[:scorer][:scale_with_labels]
-          whitelisted[:communal]          = params[:scorer][:communal] if current_user.administrator?
         end
       end
 

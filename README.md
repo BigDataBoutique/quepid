@@ -14,10 +14,12 @@ Quepid makes improving your app's search results a repeatable, reliable engineer
 3. **Iterations are slow** Moving forward seems impossible. To avoid sliding backwards, progress is slow. Many simply give up on search, depriving users of the means to find critical information.
 
 
-**To find out more, please check out the [Quepid website](http://www.quepid.com) and the [Quepid wiki](http://github.com/o19s/quepid/wiki).**
+**To learn more, please check out the [Quepid website](http://www.quepid.com) and the [Quepid wiki](http://github.com/o19s/quepid/wiki).**
+
+**If you are ready to dive right in, you can use the [Hosted Quepid](http://app.quepid.com) service right now or follow the [installation steps](https://github.com/o19s/quepid/wiki/Installation-Guide) to set up your own instance of Quepid.**
 
 # Table of Contents
-Below is information related to developing the Quepid open source project.
+Below is information related to developing the Quepid open source project, primarily for people interested in extending what Quepid can do!
 
 <!-- MarkdownTOC levels="1,2,3,4" autolink=true bracket=round -->
 
@@ -77,16 +79,16 @@ brew cask install docker-toolbox
 
 #### 2. Setup your environment
 
-Run the setup script:
+Run the local Ruby based setup script to setup your Docker images:
 
 ```
 bin/setup_docker
 ```
 
-potentially seed the db to have something to work with (the output will print out credentials you can use for test users):
+Optionally you can seed the database with sample data (the output will print out credentials you can use to login as various sample users):
 
 ```
-bin/docker r bin/rake db:seed:test
+bin/docker r bin/rake db:seed:sample_users
 ```
 
 #### 3. Running the app
@@ -116,28 +118,12 @@ You can still use `docker-compose` directly, but for the basic stuff you can use
 While running the app under foreman, you'll only see a request log, for more detailed logging run the following:
 
 ```
-tail -f -n 200 log/development.log
+bin/docker r tail -f -n 200 log/development.log
 ```
 
-or
-
-```
-bin/docker run tail -f -n 200 log/development.log
-```
-
-**Note:** To clear the logs to avoid them getting too big run: `cat /dev/null > log/development.log`
+**Note:** To clear the logs to avoid them getting too big run: `bin/docker r cat /dev/null > log/development.log`
 
 ## III. Run Tests
-
-### BEFORE RUNNING TESTS
-
-If you aren't using Docker, then create test database...
-
-```
-rake db:create RAILS_ENV=test
-```
-
-If you are using Docker, then prefix the below commands with `bin/docker r` to run them in your container.
 
 There are three types of tests that you can run:
 
@@ -146,7 +132,22 @@ There are three types of tests that you can run:
 These tests run the tests from the Rails side (mainly API controllers, and models):
 
 ```
-bin/rake test
+bin/docker r bin/rake test
+```
+
+** Make sure you don't run `bin/docker r bundle exec rake test`, you will get `uninitialized constant DatabaseCleaner` errors **
+
+Run a single test via:
+
+```
+bin/docker r bin/rake test TEST=./test/controllers/api/v1/bulk/queries_controller_test.rb
+```
+
+If you need to reset your test database setup then run:
+
+```
+bin/docker r rake db:drop RAILS_ENV=test
+bin/docker r rake db:create RAILS_ENV=test
 ```
 
 ### JS Lint
@@ -154,24 +155,32 @@ bin/rake test
 To check the JS syntax:
 
 ```
-bin/rake test:jshint
+bin/docker r bin/rake test:jshint
 ```
 
 ### Karma
 
 Runs tests for the Angular side. There are two modes for the karma tests:
 
-* Single run: `bin/rake karma:run`
-* Continuous/watched run: `bin/rake karma:start`
+* Single run: `bin/docker r bin/rake karma:run`
+* Continuous/watched run: `bin/docker r bin/rake karma:start`
 
 **Note:** The karma tests require the assets to be precompiled, which adds a significant amount of time to the test run. If you are only making changes to the test/spec files, then it is recommended you run the tests in watch mode (`bin/rake karma:start`). The caveat is that any time you make a change to the app files, you will have to restart the process (or use the single run mode).
+
+### Rubocop
+
+To check the Ruby syntax:
+
+```
+bin/docker r bundle exec rubocop
+```
 
 ### All Tests
 
 If you want to run all of the tests in one go (before you commit and push for example), just run the special rake task:
 
 ```
-bin/rake test:quepid
+bin/docker r bin/rake test:quepid
 ```
 
 ### Performance Testing
@@ -179,7 +188,7 @@ bin/rake test:quepid
 If you want to create a LOT of queries for a user for testing, then run
 
 ```
-bin/docker r bin/rake db:seed:large
+bin/docker r bin/rake db:seed:large_cases
 ```
 
 You will have two users, `quepid+100sOfQueries@o19s.com` and `quepid+1000sOfQueries@o19s.com` to test with.
@@ -243,7 +252,7 @@ Whereas Thor is a more powerful tool for writing scripts that take in args much 
 To see what rake tasks are available run:
 
 ```
-bin/rake -T
+bin/docker r bin/rake -T
 ```
 
 **Note**: the use of `bin/rake` makes sure that the version of `rake` that is running is the one locked to the app's `Gemfile.lock` (to avoid conflicts with other versions that might be installed on your system). This is equivalent of `bundle exec rake`.
@@ -339,10 +348,12 @@ See more details on the wiki at https://github.com/o19s/quepid/wiki/Troubleshoot
 Typically you would simply do:
 
 ```
-yarn add foobar
+bin/docker r yarn add foobar
 ```
 
 which will install the new Node module, and then save that dependency to `package.json`.
+
+Then check in the updated `package.json` and `yarn.lock` files.
 
 ## I'd like to test SSL
 
@@ -370,9 +381,26 @@ What you need to do:
 
 **PS:** Why are we using both `puma` and `thin`? Because I simply could not figure out how to get `puma` to work properly with SSL and did not want to spend any more time on it!
 
+## Modifying the database
+
+Here is an example of generating a migration:
+```
+bin/docker r bundle exec bin/rails g migration FixCuratorVariablesTriesForeignKeyName
+```
+
+Followed by `bin/docker r bundle exec rake db:migrate`
+
+
 # QA
 
-There is a code deployment pipeline to the staging-quepid.herokuapp.com site.
+There is a code deployment pipeline to the http://quepid-staging.herokuapp.com site that
+is run on successful commits to `master`.  
+
+If you have pending migrations you will need to run them via:
+```
+heroku run bin/rake db:migrate -a quepid-staging
+heroku restart -a quepid-staging
+```
 
 ## Seed Data
 
@@ -408,14 +436,21 @@ Check out the [Data Mapping](docs/data_mapping.md) file for more info about the 
 
 Check out the [App Structure](docs/app_structure.md) file for more info on how Quepid is structured.
 
-# Legal Pages
+# Legal Pages & GDPR
 
-If you would like to have legal pages linked in the footer of the app, add the following `ENV` vars:
+If you would like to have legal pages linked in the footer of the app, similar to behavior on http://app.quepid.com,
+add the following `ENV` vars:
 
 ```
 TC_URL      # terms and condition
 PRIVACY_URL # privacy policy
 COOKIES_URL # cookies policy
+```
+
+To comply with GDPR, and be a good citizen, the hosted version of Quepid asks if they are willing to receive Quepid related updates via email.  This feature isn't useful to private installs, so this controls the display.
+
+```
+EMAIL_MARKETING_MODE=true   # Enables a checkbox on user signup to consent to emails
 ```
 
 # Credits

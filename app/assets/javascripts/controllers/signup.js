@@ -4,8 +4,16 @@ angular.module('QuepidSecureApp')
   .controller('SignupCtrl', [
     '$scope', '$location',
     'signupSvc',
-    function ($scope, $location, signupSvc) {
-      $scope.submit = function (agree, name, username, pass, confirm) {
+    'configurationSvc',
+    function ($scope, $location, signupSvc, configurationSvc) {
+      $scope.hasTermsAndConditions = configurationSvc.hasTermsAndConditions();
+      if (configurationSvc.hasTermsAndConditions()){
+        $scope.termsAndConditionsUrl = configurationSvc.getTermsAndConditionsUrl();
+      }
+
+      $scope.isEmailMarketingMode = configurationSvc.isEmailMarketingMode();
+
+      $scope.submit = function (agree, emailMarketingAgree, name, username, pass, confirm) {
         $scope.warnAgree    = false;
         $scope.warnEmail    = false;
         $scope.warnPass     = false;
@@ -13,12 +21,13 @@ angular.module('QuepidSecureApp')
         $scope.warnErr      = false;
         $scope.warnName     = false;
 
+
         if ( !name ) {
           $scope.warnName = true;
           return;
         }
 
-        if( !agree ) {
+        if( $scope.hasTermsAndConditions && !agree ) {
           $scope.warnAgree = true;
           return;
         }
@@ -34,9 +43,10 @@ angular.module('QuepidSecureApp')
         }
 
         var user = {
-          username:  username,
-          name:      name,
-          password:  pass
+          username:        username,
+          name:            name,
+          password:        pass,
+          email_marketing: emailMarketingAgree
         };
 
         signupSvc.createUser(user, function creationError() {

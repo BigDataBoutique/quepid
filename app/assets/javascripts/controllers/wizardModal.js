@@ -23,9 +23,9 @@ angular.module('QuepidApp')
         return settingsSvc.settingsId();
       };
 
-      $scope.udpateSettingsDefaults = function() {
+      $scope.updateSettingsDefaults = function() {
         var settings = settingsSvc.defaults[$scope.pendingWizardSettings.searchEngine];
-        $scope.pendingWizardSettings.additionalFields         = settings.additional;
+        $scope.pendingWizardSettings.additionalFields         = settings.additionalFields;
         $scope.pendingWizardSettings.fieldSpec                = settings.fieldSpec;
         $scope.pendingWizardSettings.idField                  = settings.idField;
         $scope.pendingWizardSettings.searchEngine             = settings.searchEngine;
@@ -41,6 +41,11 @@ angular.module('QuepidApp')
       $scope.reset        = reset;
       $scope.reset();
       $scope.searchFields = [];
+
+      $scope.extractSolrConfigApiUrl = function(searchUrl) {
+        return searchUrl.substring(0, searchUrl.lastIndexOf('/')) + '/config';
+      };
+
 
       function reset() {
         $scope.validating = false;
@@ -78,7 +83,7 @@ angular.module('QuepidApp')
           if ( newUrl === defaultUrl ) {
             $scope.pendingWizardSettings.idField          = defaults.idField;
             $scope.pendingWizardSettings.titleField       = defaults.titleField;
-            $scope.pendingWizardSettings.additionalFields = defaults.additional;
+            $scope.pendingWizardSettings.additionalFields = defaults.additionalFields;
           } else {
             $scope.pendingWizardSettings.idField          = '';
             if (searchEngine === 'es') {
@@ -154,10 +159,29 @@ angular.module('QuepidApp')
       $scope.loadFields = loadFields;
       function loadFields (query) {
         var autocompleteList = [];
+        var _query = query.trim().toLowerCase();
+        var modified = false;
+        var modifierText = '';
+
+        var allowedModifiers = [
+            'media:',
+            'thumb:'
+        ];
+
+        for (var i = 0; i < allowedModifiers.length; i++) {
+          var modifier = allowedModifiers[i];
+
+          if (_query.startsWith(modifier)) {
+            _query = _query.substr(modifier.length);
+            modifierText = modifier;
+            modified = true;
+            break;
+          }
+        }
 
         angular.forEach($scope.searchFields, function(field) {
-          if ( field.indexOf(query) !== -1 ) {
-            autocompleteList.push({ text: field });
+          if ( field.toLowerCase().indexOf(_query) !== -1 ) {
+            autocompleteList.push({ text: modified ? modifierText + field : field });
           }
         });
 
@@ -237,7 +261,11 @@ angular.module('QuepidApp')
 
                 createPromises.push(
                   queryPromise(q)
-                    .then(q.search)
+                    /* jshint ignore:start */
+                    .then(function() {
+                        q.search();
+                    })
+                    /* jshint ignore:end */
                 );
               }
             }

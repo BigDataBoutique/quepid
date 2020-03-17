@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20190505190705) do
+ActiveRecord::Schema.define(version: 20200314193226) do
 
   create_table "annotations", force: :cascade do |t|
     t.text     "message",    limit: 65535
@@ -49,12 +49,9 @@ ActiveRecord::Schema.define(version: 20190505190705) do
   add_index "case_scores", ["user_id"], name: "user_id", using: :btree
 
   create_table "cases", force: :cascade do |t|
-    t.string   "caseName",        limit: 191
-    t.string   "searchUrl",       limit: 500
-    t.string   "fieldSpec",       limit: 500
-    t.integer  "lastTry",         limit: 4
+    t.string   "case_name",       limit: 191
+    t.integer  "last_try_number", limit: 4
     t.integer  "user_id",         limit: 4
-    t.integer  "displayPosition", limit: 4
     t.boolean  "archived"
     t.integer  "scorer_id",       limit: 4
     t.datetime "created_at",                  null: false
@@ -66,14 +63,14 @@ ActiveRecord::Schema.define(version: 20190505190705) do
   add_index "cases", ["user_id"], name: "user_id", using: :btree
 
   create_table "curator_variables", force: :cascade do |t|
-    t.string   "name",           limit: 500
-    t.float    "value",          limit: 24
-    t.integer  "query_param_id", limit: 4
-    t.datetime "created_at",                 null: false
-    t.datetime "updated_at",                 null: false
+    t.string   "name",       limit: 500
+    t.float    "value",      limit: 24
+    t.integer  "try_id",     limit: 4
+    t.datetime "created_at",             null: false
+    t.datetime "updated_at",             null: false
   end
 
-  add_index "curator_variables", ["query_param_id"], name: "query_param_id", using: :btree
+  add_index "curator_variables", ["try_id"], name: "try_id", using: :btree
 
   create_table "default_scorers", force: :cascade do |t|
     t.text     "code",                   limit: 65535
@@ -85,7 +82,6 @@ ActiveRecord::Schema.define(version: 20190505190705) do
     t.text     "scale_with_labels",      limit: 65535
     t.string   "state",                  limit: 255,   default: "draft"
     t.datetime "published_at"
-    t.boolean  "default",                              default: false
     t.datetime "created_at",                                             null: false
     t.datetime "updated_at",                                             null: false
   end
@@ -143,7 +139,6 @@ ActiveRecord::Schema.define(version: 20190505190705) do
     t.text     "scale_with_labels",      limit: 65535
     t.datetime "created_at",                                           null: false
     t.datetime "updated_at",                                           null: false
-    t.boolean  "communal",                             default: false
   end
 
   create_table "snapshot_docs", force: :cascade do |t|
@@ -207,29 +202,29 @@ ActiveRecord::Schema.define(version: 20190505190705) do
   add_index "teams_scorers", ["team_id"], name: "index_teams_scorers_on_team_id", using: :btree
 
   create_table "tries", force: :cascade do |t|
-    t.integer  "tryNo",          limit: 4
-    t.text     "queryParams",    limit: 65535
+    t.integer  "try_number",     limit: 4
+    t.text     "query_params",   limit: 65535
     t.integer  "case_id",        limit: 4
-    t.string   "fieldSpec",      limit: 500
-    t.string   "searchUrl",      limit: 500
+    t.string   "field_spec",     limit: 500
+    t.string   "search_url",     limit: 500
     t.string   "name",           limit: 50
-    t.string   "searchEngine",   limit: 50,    default: "solr"
-    t.boolean  "escapeQuery",                  default: true
+    t.string   "search_engine",  limit: 50,    default: "solr"
+    t.boolean  "escape_query",                 default: true
     t.integer  "number_of_rows", limit: 4,     default: 10
     t.datetime "created_at",                                    null: false
     t.datetime "updated_at",                                    null: false
   end
 
   add_index "tries", ["case_id"], name: "case_id", using: :btree
-  add_index "tries", ["tryNo"], name: "ix_queryparam_tryNo", using: :btree
+  add_index "tries", ["try_number"], name: "ix_queryparam_tryNo", using: :btree
 
   create_table "users", force: :cascade do |t|
     t.string   "username",               limit: 80
     t.string   "password",               limit: 120
     t.datetime "agreed_time"
     t.boolean  "agreed"
-    t.boolean  "firstLogin"
-    t.integer  "numLogins",              limit: 4
+    t.boolean  "first_login"
+    t.integer  "num_logins",             limit: 4
     t.integer  "scorer_id",              limit: 4
     t.string   "name",                   limit: 255
     t.boolean  "administrator",                      default: false
@@ -241,6 +236,7 @@ ActiveRecord::Schema.define(version: 20190505190705) do
     t.datetime "created_at",                                         null: false
     t.datetime "updated_at",                                         null: false
     t.integer  "default_scorer_id",      limit: 4
+    t.boolean  "email_marketing",                    default: false, null: false
   end
 
   add_index "users", ["default_scorer_id"], name: "index_users_on_default_scorer_id", using: :btree
@@ -254,7 +250,7 @@ ActiveRecord::Schema.define(version: 20190505190705) do
   add_foreign_key "case_scores", "cases", name: "case_scores_ibfk_1"
   add_foreign_key "case_scores", "users", name: "case_scores_ibfk_2"
   add_foreign_key "cases", "users", name: "cases_ibfk_1"
-  add_foreign_key "curator_variables", "tries", column: "query_param_id", name: "curator_variables_ibfk_1"
+  add_foreign_key "curator_variables", "tries", name: "curator_variables_ibfk_1"
   add_foreign_key "queries", "cases", name: "queries_ibfk_1"
   add_foreign_key "ratings", "queries", name: "ratings_ibfk_1"
   add_foreign_key "snapshot_docs", "snapshot_queries", name: "snapshot_docs_ibfk_1"

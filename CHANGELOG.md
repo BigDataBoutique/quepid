@@ -1,6 +1,36 @@
 # Changelog
 
-## 6.0.2 - ?
+## 6.?.? - ??
+
+## 6.1.1 - 03/07/2020
+* Community member reported race condition in standing up Rails and MySQL and issues with PhantomJS install in the developer `docker-compose.yml` and `Dockerfile.dev` setups.  https://github.com/o19s/quepid/pull/75 by @epugh fixes https://github.com/o19s/quepid/issues/76 and https://github.com/o19s/quepid/issues/73.
+* Add .dockerignore file to prevent unrelated changes from breaking Docker layer cache fixes by @TheSench https://github.com/o19s/quepid/issues/80
+* Fix issue where you couldn't clone a case without including the full history. https://github.com/o19s/quepid/pull/89 by @worleydl fixes https://github.com/o19s/quepid/issues/37 Thanks @janhoy for submitting this bug.
+* Fixed display of notes for query disappearing after collapse and then expand of query window. https://github.com/o19s/quepid/pull/88 by @dworley fixes https://github.com/o19s/quepid/issues/87
+* NDCG@10 doesn't include documents that are rated via Explain Other, it only looks at the documents returned by the search engine.  We want to be able to have NDCG look globally at all rated documents.  https://github.com/o19s/quepid/pull/90 by @nathancday and @worleydl fixes https://github.com/o19s/quepid/issues/78.  Note: We currently have the NDCG@10 scorer in app.quepid.com, however it hasn't been backported to the Docker image or the dev setup in Quepid.  See https://github.com/o19s/quepid/issues/91.
+
+## 6.1.0 - 02/01/2020
+This release changes the database schema, so you will need to run `docker-compose run --rm app bin/rake db:migrate` if you have an existing Quepid.
+
+* Cloning cases now carries any magic variables and their values along to the new case https://github.com/o19s/quepid/pull/55 by @epugh fixes https://github.com/o19s/quepid/issues/37
+* Only treat field content that begins with "http" as a link.  https://github.com/o19s/quepid/pull/35 by @pfries fixes https://github.com/o19s/quepid/issues/34
+* Update Elasticsearch logo.  https://github.com/o19s/quepid/pull/38 by @moshebla
+* Remove sqlite from gem, no longer used.  https://github.com/o19s/quepid/pull/41 by @epugh fixes https://github.com/o19s/quepid/issues/40
+* Better look and UI experience for the dev panel.  https://github.com/o19s/quepid/pull/39 by @moshebla
+* Show or don't show the T&C's link based on the Quepid configuration.  https://github.com/o19s/quepid/pull/42 by @epugh fixes https://github.com/o19s/quepid/issues/44 by @flaxsearch.
+* Add Query button activates in response to query text entered.  https://github.com/o19s/quepid/pull/43 by @moshebla
+* Prevent duplicate queries when using bulk query importer.   https://github.com/o19s/quepid/pull/49 by @epugh fixes https://github.com/o19s/quepid/issues/48
+* Production oriented Docker Compose setup for Quepid is ready!  Install guide at https://github.com/o19s/quepid/wiki/Installation-Guide.  https://github.com/o19s/quepid/pull/36 by @epugh was based on original work in https://github.com/o19s/quepid/pull/33 by @synhershko.  Thanks!
+* Update the sample TMDB dataset for Elasticsearch to support `thumb:poster_path` in the field listing.  https://github.com/o19s/quepid/issues/53 by @epugh
+* Collapse query results well from bottom (in addition to the top) https://github.com/o19s/quepid/pull/28 by @epugh fixes https://github.com/o19s/quepid/issues/20 by @peterdm.  Thanks @ychaker for reviewing PR.
+* Explain Other on ES 6 and 7 Broken.  https://github.com/o19s/splainer-search/pull/74 by @worleydl fixes https://github.com/o19s/quepid/issues/25.
+* Support for embeds of audio/image/video via `media:`. https://github.com/o19s/quepid/pull/62 by @worleydl fixes https://github.com/o19s/quepid/issues/56 by @flaxsearch
+* Autocomplete in Case Setup Wizard properly handles `media:` and `thumb:` prefixes.  Nice refactoring for more prefixes.   https://github.com/o19s/quepid/pull/46 by @moshebla with refactor by @worleydl.
+* Post the onboarding wizard you would often see your queries being stalled in loading.  Only workaround was to reload the Javascript app.  https://github.com/o19s/quepid/pull/69 by @worleydl fixes https://github.com/o19s/quepid/issues/66
+* app.quepid.com needs to get explicit consent from users to receive emails related to Quepid and related features.   Introducing a new `customize_quepid.rb` file in initializers to start supporting more customizations of Quepid.  https://github.com/o19s/quepid/pull/68 by @worleydl.
+* Only show cookie acceptance popup if COOKIES_URL is set.  https://github.com/o19s/quepid/pull/71 by @epugh fixes https://github.com/o19s/quepid/issues/70 by @epugh.
+
+## 6.0.2 - 11/26/2019
 * Deprecate www.quepid.com/support in favor of linking to wiki.  https://github.com/o19s/quepid/pull/18 by @epugh fixes https://github.com/o19s/quepid/issues/17
 * More informative error message when you delete a custom scorer and its in use.  https://github.com/o19s/quepid/pull/22 by @epugh fixes https://github.com/o19s/quepid/issues/21.
 
@@ -13,7 +43,7 @@
 
 
 
-## 6.0.0
+## 6.0.0 - 07/25/2019
 * Removes everything related to payments, and makes Quepid "free"
 * Adds support for using a CORS proxy for Solr instances that are not configured to allow connections from Quepid
 * Replaces use of Vagrant in development in favor of Docker

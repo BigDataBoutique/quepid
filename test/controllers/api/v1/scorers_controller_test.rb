@@ -22,14 +22,13 @@ module Api
           scorer = json_response
 
           assert_not_nil scorer['scorerId']
-          assert_not_nil scorer['code']
+          assert_nil     scorer['code']
           assert_not_nil scorer['name']
           assert_not_nil scorer['scale']
 
           assert_equal user.id,                       scorer['owner_id']
-          assert_equal Scorer::DEFAULTS[:code],       scorer['code']
-          assert_equal Scorer::DEFAULTS[:scale],      scorer['scale']
-          assert_equal Scorer::DEFAULTS[:query_test], scorer['queryTest']
+          assert_equal [],                            scorer['scale']
+          assert_equal false,                         scorer['queryTest']
 
           regex = /Scorer/
           assert_match regex, scorer['name']
@@ -68,8 +67,8 @@ module Api
 
           assert_equal user.id,                       scorer['owner_id']
           assert_equal code,                          scorer['code']
-          assert_equal Scorer::DEFAULTS[:scale],      scorer['scale']
-          assert_equal Scorer::DEFAULTS[:query_test], scorer['queryTest']
+          assert_equal [],                            scorer['scale']
+          assert_equal false,                         scorer['queryTest']
 
           regex = /Scorer/
           assert_match regex, scorer['name']
@@ -88,14 +87,13 @@ module Api
           scorer = JSON.parse(response.body)
 
           assert_not_nil scorer['scorerId']
-          assert_not_nil scorer['code']
+          assert_nil     scorer['code']
           assert_not_nil scorer['name']
           assert_not_nil scorer['scale']
 
           assert_equal user.id,                       scorer['owner_id']
-          assert_equal Scorer::DEFAULTS[:code],       scorer['code']
-          assert_equal Scorer::DEFAULTS[:scale],      scorer['scale']
-          assert_equal Scorer::DEFAULTS[:query_test], scorer['queryTest']
+          assert_equal [],                            scorer['scale']
+          assert_equal false,                         scorer['queryTest']
 
           assert_equal name, scorer['name']
         end
@@ -110,14 +108,13 @@ module Api
           scorer = JSON.parse(response.body)
 
           assert_not_nil scorer['scorerId']
-          assert_not_nil scorer['code']
+          assert_nil     scorer['code']
           assert_not_nil scorer['name']
           assert_not_nil scorer['scale']
 
           assert_equal user.id,                       scorer['owner_id']
-          assert_equal Scorer::DEFAULTS[:code],       scorer['code']
           assert_equal scale,                         scorer['scale']
-          assert_equal Scorer::DEFAULTS[:query_test], scorer['queryTest']
+          assert_equal false,                         scorer['queryTest']
         end
 
         test 'limits scale length' do
@@ -154,14 +151,13 @@ module Api
           scorer = JSON.parse(response.body)
 
           assert_not_nil scorer['scorerId']
-          assert_not_nil scorer['code']
+          assert_nil     scorer['code']
           assert_not_nil scorer['name']
           assert_not_nil scorer['scale']
 
           assert_equal user.id,                       scorer['owner_id']
-          assert_equal Scorer::DEFAULTS[:code],       scorer['code']
           assert_equal scale.sort,                    scorer['scale']
-          assert_equal Scorer::DEFAULTS[:query_test], scorer['queryTest']
+          assert_equal false,                         scorer['queryTest']
         end
 
         test 'accepts scale as a string' do
@@ -174,14 +170,13 @@ module Api
           scorer = JSON.parse(response.body)
 
           assert_not_nil scorer['scorerId']
-          assert_not_nil scorer['code']
+          assert_nil scorer['code']
           assert_not_nil scorer['name']
-          assert_not_nil scorer['scale']
+          assert_equal [ 1, 2, 3, 4 ], scorer['scale']
 
           assert_equal user.id,                       scorer['owner_id']
-          assert_equal Scorer::DEFAULTS[:code],       scorer['code']
           assert_equal scale.sort,                    scorer['scale']
-          assert_equal Scorer::DEFAULTS[:query_test], scorer['queryTest']
+          assert_equal false,                         scorer['queryTest']
         end
 
         test 'sets scorer as a test for a query' do
@@ -342,35 +337,6 @@ module Api
 
           assert_equal scale.sort, scorer['scale']
           assert_equal scale.sort, owned_scorer.scale
-        end
-
-        describe 'communal scorer' do
-          describe 'admin user' do
-            it 'successfully marks the scorer as communal' do
-              put :update, id: owned_scorer.id, scorer: { communal: true }
-
-              assert_response :ok
-
-              owned_scorer.reload
-
-              assert_equal true, owned_scorer.communal
-            end
-          end
-
-          describe 'non admin user' do
-            let(:scorer) { scorers(:random_scorer) }
-            let(:user)   { users(:random) }
-
-            it 'ignores the attempt of the user to try to set the scorer as communal' do
-              put :update, id: scorer.id, scorer: { communal: true }
-
-              assert_response :ok
-
-              owned_scorer.reload
-
-              assert_equal false, owned_scorer.communal
-            end
-          end
         end
 
         describe 'analytics' do
@@ -561,7 +527,6 @@ module Api
       describe 'Fetches scorers' do
         let(:owned_scorer)     { scorers(:owned_scorer) }
         let(:shared_scorer)    { scorers(:shared_scorer) }
-        let(:community_scorer) { scorers(:community_scorer) }
 
         test 'returns all scorers owned by user and those shared through teams' do
           get :index
@@ -574,7 +539,6 @@ module Api
             'scorerId'            => owned_scorer.id,
             'scorerType'          => owned_scorer.class.to_s,
             'code'                => owned_scorer.code,
-            'communal'            => shared_scorer.communal,
             'name'                => owned_scorer.name,
             'queryTest'           => owned_scorer.query_test,
             'scale'               => owned_scorer.scale,
@@ -600,7 +564,6 @@ module Api
             'scorerId'            => shared_scorer.id,
             'scorerType'          => shared_scorer.class.to_s,
             'code'                => shared_scorer.code,
-            'communal'            => shared_scorer.communal,
             'name'                => shared_scorer.name,
             'queryTest'           => shared_scorer.query_test,
             'scale'               => shared_scorer.scale,
@@ -616,34 +579,6 @@ module Api
 
           assert_includes scorers['user_scorers'], expected_owned_response
           assert_includes scorers['user_scorers'], expected_shared_response
-        end
-
-        test 'returns all scorers shared by a quepid admin' do
-          get :index
-
-          assert_response :ok
-
-          scorers = JSON.parse(response.body)
-
-          expected_community_response = {
-            'scorerId'            => community_scorer.id,
-            'scorerType'          => community_scorer.class.to_s,
-            'code'                => community_scorer.code,
-            'communal'            => community_scorer.communal,
-            'name'                => community_scorer.name,
-            'queryTest'           => community_scorer.query_test,
-            'scale'               => community_scorer.scale,
-            'owner_id'            => community_scorer.owner_id,
-            'owned'               => false,
-            'queryId'             => nil,
-            'manualMaxScore'      => false,
-            'manualMaxScoreValue' => 100,
-            'showScaleLabels'     => false,
-            'scaleWithLabels'     => nil,
-            'teams'               => [],
-          }
-
-          assert_includes scorers['community_scorers'], expected_community_response
         end
       end
     end

@@ -67,11 +67,11 @@ module Api
 
           user = User.find_by(username: 'foo')
 
-          assert_not_nil user.firstLogin
-          assert_not_nil user.numLogins
+          assert_not_nil user.first_login
+          assert_not_nil user.num_logins
 
-          assert_equal true,  user.firstLogin
-          assert_equal 0,     user.numLogins
+          assert_equal true,  user.first_login
+          assert_equal 0,     user.num_logins
         end
 
         test 'does not care if the name is present' do
@@ -106,6 +106,41 @@ module Api
 
             assert_equal name, user.name
           end
+        end
+      end
+
+      describe 'verify email marketing mode logic' do
+        test 'accepts no email marketing field' do
+          password = 'password'
+          data = { user: { username: 'foo', password: password } }
+
+          post :create, data
+          assert_response :ok
+
+          user = User.last
+          assert_not user.email_marketing
+        end
+
+        test 'unchecked sets email_marketing to false' do
+          password = 'password'
+          data = { user: { username: 'foo', password: password, email_marketing: false } }
+
+          post :create, data
+          assert_response :ok
+
+          user = User.last
+          assert_not user.email_marketing
+        end
+
+        test 'checked sets email_marketing to true' do
+          password = 'password'
+          data = { user: { username: 'foo', password: password, email_marketing: true } }
+
+          post :create, data
+          assert_response :ok
+
+          user = User.last
+          assert user.email_marketing
         end
       end
 

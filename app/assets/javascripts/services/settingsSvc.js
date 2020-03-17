@@ -19,16 +19,16 @@ angular.module('QuepidApp')
     ) {
       this.defaults = {
         solr: {
-          additional:      '',
-          escapeQuery:     true,
-          fieldSpec:       'id:id, title:title',
-          idField:         'id',
-          numberOfRows:    10,
-          queryParams:     'q=#$query##',
-          searchEngine:    'solr',
-          searchUrl:       'http://quepid-solr.dev.o19s.com/solr/tmdb/select',
-          titleField:      'title',
-          urlFormat:       'http(s?)://yourdomain.com/<index>/select',
+          queryParams:      'q=#$query##',
+          escapeQuery:      true,
+          fieldSpec:        'id:id, title:title',
+          idField:          'id',
+          titleField:       'title',
+          additionalFields: ['overview','thumb:poster_path'],
+          numberOfRows:     10,
+          searchEngine:     'solr',
+          searchUrl:        'http://quepid-solr.dev.o19s.com/solr/tmdb/select',
+          urlFormat:        'http(s?)://yourdomain.com:8983/<index>/select',
         },
         es: {
           queryParams:  [
@@ -41,15 +41,15 @@ angular.module('QuepidApp')
             '}',
           ].join('\n'),
 
-          additional:      '',
-          escapeQuery:     true,
-          fieldSpec:       'id:_id, title:title',
-          idField:         '_id',
-          numberOfRows:    10,
-          searchEngine:    'es',
-          searchUrl:       'http://quepid-elasticsearch.dev.o19s.com:9200/tmdb/_search',
-          titleField:      'title',
-          urlFormat:       'http(s?)://yourdomain.com/<index>/_search',
+          escapeQuery:       true,
+          fieldSpec:         'id:_id, title:title',
+          idField:           '_id',
+          titleField:        'title',
+          additionalFields:  ['overview','thumb:poster_path'],
+          numberOfRows:      10,
+          searchEngine:      'es',
+          searchUrl:         'http://quepid-elasticsearch.dev.o19s.com:9200/tmdb/_search',
+          urlFormat:         'http(s?)://yourdomain.com:9200/<index>/_search',
         }
       };
 
@@ -158,17 +158,18 @@ angular.module('QuepidApp')
         // (3) possibly edited query params
         // (4) possibly modified curator vars
         // probably could be a bit more restful
+        // Note that we map between camelCase in JS and snake_case in API here.
         var sentData = {};
         var currCaseNo = caseTryNavSvc.getCaseNo();
 
         sentData.curatorVars     = settingsToSave.selectedTry.curatorVarsDict();
-        sentData.escapeQuery     = settingsToSave.escapeQuery;
+        sentData.escape_query    = settingsToSave.escapeQuery;
         sentData.fields          = settingsToSave.createFieldSpec().fields;
-        sentData.fieldSpec       = settingsToSave.fieldSpec;
+        sentData.field_spec      = settingsToSave.fieldSpec;
         sentData.number_of_rows  = settingsToSave.numberOfRows;
-        sentData.queryParams     = settingsToSave.selectedTry.queryParams;
-        sentData.searchEngine    = settingsToSave.searchEngine;
-        sentData.searchUrl       = settingsToSave.searchUrl;
+        sentData.query_params    = settingsToSave.selectedTry.queryParams;
+        sentData.search_engine   = settingsToSave.searchEngine;
+        sentData.search_url       = settingsToSave.searchUrl;
 
         return $http.post('/api/cases/' + currCaseNo + '/tries', sentData)
           .then(function(response) {
