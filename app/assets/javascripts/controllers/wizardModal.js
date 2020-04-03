@@ -193,13 +193,6 @@ angular.module('QuepidApp')
         angular.merge($scope.pendingWizardSettings, settingsSvc.editableSettings());
         $scope.pendingWizardSettings.newQueries = [];
 
-        if(userSvc.getUser().firstTime===true){
-          $scope.pendingWizardSettings.caseName = 'Movies Search';
-        } else {
-          $log.info('Skipping welcome step for case wizard');
-          WizardHandler.wizard().goTo(1);
-        }
-
         $scope.pendingWizardSettings.deleteQuery = function(index) {
           $scope.pendingWizardSettings.newQueries.splice(index, 1);
         };

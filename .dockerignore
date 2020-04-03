@@ -10,3 +10,8 @@ Dockerfile*
 .circleci
 .git
 node_modules
+
+*.md
+LICENSE
+docs/
+log/

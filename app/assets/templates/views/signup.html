@@ -32,100 +32,12 @@
     </div>
 
     <div class="col-md-1 or-block col-sm-2">
-      <h2>OR</h2>
+      <h2><!--OR--></h2>
     </div>
 
     <div class="col-md-3 col-sm-4">
-      <div ng-controller="SignupCtrl">
-        <form ng-submit="submit(agree, emailMarketingAgree, name, username, password, confirm)" >
-          <h2>Signup to get started!</h2>
-
-          <div class="alert alert-danger" ng-if="warnErr">
-            Something weird happened. Contact us for assistance
-          </div>
-
-          <div class="alert alert-danger" ng-if="warnEmail">
-            You must enter an email address.
-          </div>
-
-          <div class="alert alert-danger" ng-if="warnDefined">
-            The email you entered is already registered!
-          </div>
-
-          <div class="alert alert-danger" ng-if="warnPass">
-            The passwords do not match!
-          </div>
-
-          <div class="alert alert-danger" ng-if="warnName">
-            Please provide your full name, so we can properly address you :)
-          </div>
-
-          <div class="alert alert-danger" ng-if="warnAgree">
-            You must agree to the terms and conditions.
-          </div>
-
-          <div class="form-group">
-            <input
-              type="text"
-              ng-model="name"
-              class="form-control"
-              placeholder="Full Name"
-              required
-             />
-          </div>
-
-          <div class="form-group">
-            <input type="email" ng-model="username" class="form-control" placeholder="Email Address" required />
-          </div>
-
-          <div class="form-group">
-            <input
-              type="password"
-              ng-model="password"
-              class="form-control"
-              placeholder="Password"
-              required
-             />
-          </div>
-
-          <div class="form-group">
-            <input
-              type="password"
-              ng-model="confirm"
-              class="form-control"
-              placeholder="Confirm Password"
-              required
-             />
-          </div>
-
-          <div class="checkbox" ng-show="hasTermsAndConditions">
-            <label>
-              <input type="checkbox" ng-model="agree" ng-required="hasTermsAndConditions"/>
-              Agree to
-              <a ng-href="{{ termsAndConditionsUrl }}" target="_blank">terms &amp; conditions</a>?
-            </label>
-          </div>
-
-          <div class="checkbox" ng-show="isEmailMarketingMode">
-            <label>
-              <input type="checkbox" ng-model="emailMarketingAgree" ng-required="false"/>
-              Click here if you'd like us to send you occasional news about relevance tuning with Quepid (including new features). You can unsubscribe at any time.
-            </label>
-          </div>
-
-
-          <button class="btn btn-primary">Signup</button>
-        </form>
-      </div>
+      <img src="https://bigdataboutique.com/images/logo.svg">
     </div>
   </div>
 
-  <div class="row m-t-20">
-    <div class="col-md-8 col-md-offset-2">
-      <p>
-        <a href="http://www.opensourceconnections.com/2013/10/07/quepid-give-your-search-queries-some-love/">Read more</a> about the Quepid story. <a href="mailto:TalkToUs@opensourceconnections.com">Contact us</a>
-        to talk about Quepid or ask how we can help with your search problems!
-      </p>
-    </div>
-  </div>
 </div>
