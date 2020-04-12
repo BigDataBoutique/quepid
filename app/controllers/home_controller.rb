@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 class HomeController < ApplicationController
-  before_action :redirect_to_non_ssl
-
   # ignoring naming convention because these are getting passed to JS
   # rubocop:disable Naming/VariableName
   # rubocop:disable Metrics/MethodLength
@@ -49,17 +47,4 @@ class HomeController < ApplicationController
   # rubocop:enable Metrics/MethodLength
   # rubocop:enable Naming/VariableName
 
-  private
-
-  def redirect_to_non_ssl
-    if request.ssl?
-      original_url = request.original_url
-      original_url.gsub!(%r{https://}, 'http://')
-      redirect_to original_url
-      flash.keep
-      return false
-    end
-
-    true
-  end
 end
