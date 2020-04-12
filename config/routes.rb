@@ -8,17 +8,12 @@ Rails.application.routes.draw do
     mount Sidekiq::Web, at: 'admin/jobs'
   end
 
-  # rubocop:disable Metrics/LineLength
-  # let's encrypt verification (can be removed in the future)
-  get '.well-known/acme-challenge/9IWOgATbRmEtWKsOOJQ-E4-lrIT9tHsHv_9bl5Zt6fI', to: proc { [ 200, {}, [ '9IWOgATbRmEtWKsOOJQ-E4-lrIT9tHsHv_9bl5Zt6fI.fDzklrX7i2PRMRsPtxEvo2yRZDSfy2LO3t--NfWfgaA' ] ] }
-  # rubocop:enable Metrics/LineLength
-
   # legacy routes for angular single page app
   post 'users/login' => 'sessions#create', defaults: { format: :json }
   get  'logout'      => 'sessions#destroy'
   get  'secure'      => 'secure#index'
   # end legacy routes
-  get  'healthz'     => 'secure#healthz'
+  get  'healthz'     => 'healthz#index'
 
   resources :sessions
   resource :account, only: [ :update ]
