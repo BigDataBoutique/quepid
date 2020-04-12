@@ -7,4 +7,10 @@ class SecureController < ApplicationController
   def index
     @user_decorator = CurrentUserDecorator.new current_user
   end
+  
+  # Call this API endpoint to test this service is up
+  # @return 200 if successful
+  def healthz
+    head 200
+  end
 end

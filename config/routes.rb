@@ -18,6 +18,7 @@ Rails.application.routes.draw do
   get  'logout'      => 'sessions#destroy'
   get  'secure'      => 'secure#index'
   # end legacy routes
+  get  'healthz'     => 'secure#healthz'
 
   resources :sessions
   resource :account, only: [ :update ]
